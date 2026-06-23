@@ -1,0 +1,47 @@
+name: Android CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    name: Build and Validate Project
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. جلب الكود المصدري للمشروع
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # 2. إعداد بيئة جافا (تتوافق مع Java 17 المستخدمة في إعدادات Gradle)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      # 3. التحقق من وجود الـ Wrapper أو توليده وإصلاحه تلقائياً في حال غيابه
+      - name: Generate New Gradle Wrapper Automatically
+        run: |
+          if [ ! -f "gradlew" ]; then
+            echo "Gradle Wrapper not found. Generating a new wrapper..."
+            gradle wrapper --gradle-version 8.2 --distribution-type bin
+          else
+            echo "Gradle Wrapper exists. Ensuring execution permissions..."
+          fi
+          chmod +x gradlew
+
+      # 4. بناء التطبيق للتأكد من خلو المشروع من أخطاء الـ Compilation
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      # 5. حفظ ملف الـ APK الناتج كأصل (Artifact) يمكن تحميله بعد النجاح
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
