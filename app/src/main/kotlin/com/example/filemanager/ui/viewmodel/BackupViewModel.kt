@@ -5,38 +5,31 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.filemanager.core.FileBackupManager
 import com.example.filemanager.ui.state.BackupState
-import kotlinx.flow.MutableStateFlow
-import kotlinx.flow.StateFlow
-import kotlinx.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
 class BackupViewModel : ViewModel() {
 
-    // استدعاء طبقة المنطق (Core Logic)
     private val backupManager = FileBackupManager()
 
-    // إدارة الحالة الداخلية والخارجية للتطبيق
+    // تصحيح الاستدعاء وإدارة الحالة داخلياً وخارجياً
     private val _backupState = MutableStateFlow<BackupState>(BackupState.Idle)
     val backupState: StateFlow<BackupState> = _backupState.asStateFlow()
 
-    /**
-     * بدء عملية البحث والنسخ الاحتياطي في الخلفية.
-     */
     fun startBackupProcess() {
         viewModelScope.launch(Dispatchers.IO) {
-            // تحويل الحالة إلى جاري التحميل لتحديث الواجهة
+            // استخدام .value لتحديث الحالة برمجياً بشكل صحيح
             _backupState.value = BackupState.Loading
             
-            // تحديد مسارات التخزين العامة
             val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val rootStorage = Environment.getExternalStorageDirectory()
 
-            // تنفيذ العملية من كلاس الـ Core
             val result = backupManager.executeBackup(downloadsDir, rootStorage)
             
-            // معالجة النتيجة وتحديث الحالة بناءً على النجاح أو الفشل
             result.onSuccess {
                 _backupState.value = BackupState.Success("تم النسخ والاستبدال بنجاح إلى WhatsApp/GBBackups")
             }.onFailure { exception ->
