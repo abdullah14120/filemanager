@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. جلب الكود المصدري للمشروع
+      # 1. جلب الكود المصدري للمشروع من المستودع
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
@@ -24,22 +24,27 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # 3. التحقق من وجود الـ Wrapper أو توليده وإصلاحه تلقائياً في حال غيابه
+      # 3. توليد الـ Gradle Wrapper بالكامل (السكربت وملف الـ JAR القياسي)
       - name: Generate New Gradle Wrapper Automatically
         run: |
-          if [ ! -f "gradlew" ]; then
-            echo "Gradle Wrapper not found. Generating a new wrapper..."
-            gradle wrapper --gradle-version 8.2 --distribution-type bin
+          # استدعاء محرك التثبيت لتوليد السكربت وملف الـ JAR في مسار gradle/wrapper/
+          gradle wrapper --gradle-version 8.2 --distribution-type bin
+          
+          # التحقق المباشر من نجاح العملية وجودة الملفات
+          if [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Success: gradle-wrapper.jar has been generated in the environment."
           else
-            echo "Gradle Wrapper exists. Ensuring execution permissions..."
+            echo "Critical Error: gradle-wrapper.jar generation failed!" && exit 1
           fi
+          
+          # منح صلاحيات التنفيذ لسكربت البناء الرئيسي
           chmod +x gradlew
 
-      # 4. بناء التطبيق للتأكد من خلو المشروع من أخطاء الـ Compilation
+      # 4. بناء التطبيق واستخراج نسخة الـ Debug وتتبع الأخطاء إن وجدت
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      # 5. حفظ ملف الـ APK الناتج كأصل (Artifact) يمكن تحميله بعد النجاح
+      # 5. رفع ملف الـ APK الناتج كـ Artifact لتحميله فور انتهاء البناء بنجاح
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
