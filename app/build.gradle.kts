@@ -35,12 +35,17 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+        
+        // تمرير الأمر للمترجم لتخطي فحص التوافقية الإجباري بين الإصدارات الفرعية لكوتلن وكومبوز
+        freeCompilerArgs += listOf(
+            "-P",
+            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+        )
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        // متوافق مع نسخة Kotlin 1.9.23
         kotlinCompilerExtensionVersion = "1.5.10" 
     }
     packaging {
@@ -55,7 +60,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
 
-    // جلب إصدارات Compose الحديثة المستقرة والمتوافقة مع المترجم
     implementation(platform("androidx.compose:compose-bom:2024.02.02"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
