@@ -12,11 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. جلب الكود المصدري للمشروع من المستودع
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # 2. إعداد بيئة جافا (تتوافق مع Java 17 المستخدمة في إعدادات Gradle)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -24,27 +22,22 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # 3. توليد الـ Gradle Wrapper بالكامل (السكربت وملف الـ JAR القياسي)
       - name: Generate New Gradle Wrapper Automatically
         run: |
-          # استدعاء محرك التثبيت لتوليد السكربت وملف الـ JAR في مسار gradle/wrapper/
-          gradle wrapper --gradle-version 8.2 --distribution-type bin
+          # استخدام إصدار 8.5 لضمان التوافق الكامل مع أدوات البناء الحديثة والـ Plugins المعرفة
+          gradle wrapper --gradle-version 8.5 --distribution-type bin
           
-          # التحقق المباشر من نجاح العملية وجودة الملفات
           if [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "Success: gradle-wrapper.jar has been generated in the environment."
+            echo "Success: gradle-wrapper.jar has been generated."
           else
             echo "Critical Error: gradle-wrapper.jar generation failed!" && exit 1
           fi
           
-          # منح صلاحيات التنفيذ لسكربت البناء الرئيسي
           chmod +x gradlew
 
-      # 4. بناء التطبيق واستخراج نسخة الـ Debug وتتبع الأخطاء إن وجدت
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      # 5. رفع ملف الـ APK الناتج كـ Artifact لتحميله فور انتهاء البناء بنجاح
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
