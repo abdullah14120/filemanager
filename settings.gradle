@@ -1,0 +1,3 @@
+rootProject.name = "filemanager"
+include ':app'
+
