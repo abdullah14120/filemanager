@@ -24,7 +24,7 @@ jobs:
 
       - name: Generate New Gradle Wrapper Automatically
         run: |
-          # استخدام إصدار 8.5 لضمان التوافق الكامل مع أدوات البناء الحديثة والـ Plugins المعرفة
+          # توليد الـ Wrapper المتوافق مع إعدادات الـ Plugins المعدلة
           gradle wrapper --gradle-version 8.5 --distribution-type bin
           
           if [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
